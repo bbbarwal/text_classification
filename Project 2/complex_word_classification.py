@@ -42,6 +42,7 @@ def all_complex(data_file):
     evaluation results."""
     words, y_true = load_file(data_file)
     y_pred = [1] * len(y_true)
+    
 
     print("Evaluation on all_complex baseline: ")
 
@@ -163,11 +164,14 @@ def naive_bayes(training_file, development_file, counts):
 
     #evaluation
     print("Performance on training data:")
-    evaluate(clf.predict(train_x), train_y)
+    train_pred = clf.predict(train_x)
+    dev_pred = clf.predict(dev_x)
+    
+    evaluate(train_pred, train_y)
 
     #evaluation on dev data
     print("Performance on development data:")
-    evaluate(clf.predict(dev_x), dev_y)
+    evaluate(dev_pred, dev_y)
 
 
 def feature_extraction(words, labels, counts):
@@ -182,8 +186,32 @@ def logistic_regression(training_file, development_file, counts):
     features. Print out evaluation results on the training and
     development data.
     """
-    ## YOUR CODE HERE
-    pass
+    words_train, y_train = load_file(training_file)
+    words_dev, y_dev = load_file(development_file)
+
+    train_x, train_y = feature_extraction(words_train, y_train, counts)
+    dev_x, dev_y = feature_extraction(words_dev, y_dev, counts)
+
+    #normalize
+    mean = train_x.mean(axis=0)
+    std = train_x.std(axis=0)
+    train_x = (train_x - mean) / std
+    dev_x = (dev_x - mean) / std
+
+    clf = LogisticRegression(max_iter=1000)
+    clf.fit(train_x, train_y)
+
+    #evaluation
+    print("Performance on training data:")
+    train_pred = clf.predict(train_x)
+    dev_pred = clf.predict(dev_x)
+
+    evaluate(train_pred, train_y)
+
+    #evaluation on dev data
+    print("Performance on development data:")
+    evaluate(dev_pred, dev_y)
+
 
 
 ### 3.3: Build your own classifier
@@ -208,9 +236,9 @@ def baselines(training_file, development_file, counts):
     word_length_threshold(training_file, development_file)
 
     print("\nWord frequency baseline")
-    print("-------------------------")
-    print("max ngram counts:", max(counts.values()))
-    print("min ngram counts:", min(counts.values()))
+    #print("-------------------------")
+    #print("max ngram counts:", max(counts.values()))
+    #print("min ngram counts:", min(counts.values()))
     word_frequency_threshold(training_file, development_file, counts)
 
 def classifiers(training_file, development_file, counts):
@@ -230,7 +258,7 @@ def classifiers(training_file, development_file, counts):
 
 if __name__ == "__main__":
     training_file = "Project 2/data/complex_words_training.txt"
-    development_file = "Project 2/data/complex_words_test_unlabeled.txt"
+    development_file = "Project 2/data/complex_words_development.txt"
     test_file = "Project 2/data/complex_words_test_unlabeled.txt"
     print("Loading ngram counts ...")
     ngram_counts_file = "Project 2/data/ngram_counts.txt.gz"
