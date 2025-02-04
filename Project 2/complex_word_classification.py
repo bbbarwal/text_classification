@@ -14,9 +14,13 @@ import numpy as np
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from evaluation import get_accuracy, get_fscore, get_precision, get_recall
+from sklearn.ensemble import RandomForestClassifier
 
 from syllables import count_syllables
+import nltk
+nltk.download('wordnet')
 from nltk.corpus import wordnet as wn
+
 
 from evaluation import get_fscore, evaluate
 
@@ -173,6 +177,17 @@ def naive_bayes(training_file, development_file, counts):
     print("Performance on development data:")
     evaluate(dev_pred, dev_y)
 
+    correct_train = [word for word, true, pred in zip(words_train, train_y, train_pred) if true == pred]
+    incorrect_train = [word for word, true, pred in zip(words_train, train_y, train_pred) if true != pred]
+
+    correct_dev = [word for word, true, pred in zip(words_dev, dev_y, dev_pred) if true == pred]
+    incorrect_dev = [word for word, true, pred in zip(words_dev, dev_y, dev_pred) if true != pred]
+
+    # Print sample words
+    print("\nCorrectly Predicted Training Words:", correct_train[:20])
+    print("Incorrectly Predicted Training Words:", incorrect_train[:20])
+    print("\nCorrectly Predicted Development Words:", correct_dev[:20])
+    print("Incorrectly Predicted Development Words:", incorrect_dev[:20])
 
 def feature_extraction(words, labels, counts):
     """Convert words into feature vectors: length and frequency."""
@@ -216,9 +231,44 @@ def logistic_regression(training_file, development_file, counts):
 
 ### 3.3: Build your own classifier
 
+def extract_features_RF(word, counts):
+        word_length = len(word)
+        word_freq = counts.get(word, 0)
+        syllables = count_syllables(word)
+        synonyms = len(wn.synsets(word))
+        return [word_length, word_freq, syllables, synonyms]
+
 def my_classifier(training_file, development_file, counts):
     ## YOUR CODE HERE
-    pass
+    word_train, y_train = load_file(training_file)
+    word_dev, y_dev = load_file(development_file)
+    
+    #features
+    train_x = np.array([extract_features_RF(word, counts) for word in word_train])
+    train_y = np.array(y_train)
+
+    dev_x = np.array([extract_features_RF(word, counts) for word in word_dev])
+    dev_y = np.array(y_dev)
+
+    #normalization
+    mean = train_x.mean(axis=0)
+    std = train_x.std(axis=0)
+    train_x = (train_x - mean) / std
+    dev_x = (dev_x - mean) / std
+
+    clf = RandomForestClassifier(n_estimators=100, max_depth=2, random_state=42)
+    clf.fit(train_x, train_y)
+
+    #prediction
+    train_pred = clf.predict(train_x)
+    dev_pred = clf.predict(dev_x)
+
+    print("Performance on training data:")
+    evaluate(train_pred, train_y)
+
+    print(" ")
+    print("Performance on development data:")
+    evaluate(dev_pred, dev_y)
 
 
 def baselines(training_file, development_file, counts):
@@ -256,6 +306,37 @@ def classifiers(training_file, development_file, counts):
     print("-----------")
     my_classifier(training_file, development_file, counts)
 
+def final_model_trained(training_file, development_file, test_file, counts):
+    word_train, y_train = load_file(training_file)
+    word_dev, y_dev = load_file(development_file)
+
+    combined_words = word_train + word_dev
+    combined_labels = y_train + y_dev
+     
+    combined_x = np.array([extract_features_RF(word, counts) for word in combined_words])
+    combined_y = np.array(combined_labels)
+
+    #normalization
+    mean = combined_x.mean(axis=0)
+    std = combined_x.std(axis=0)
+    combined_x = (combined_x - mean) / std
+
+    clf = RandomForestClassifier(n_estimators=100, max_depth=2, random_state=42)
+    clf.fit(combined_x, combined_y)
+
+    test_words, _ = load_file(test_file)
+    test_x = np.array([extract_features_RF(word, counts) for word in test_words])
+    test_x = (test_x - mean) / std
+    test_pred = clf.predict(test_x)
+
+    with open("test_labels.txt", 'wt') as f:
+        for label in test_pred:
+            f.write(str(label) + "\n")
+        
+
+
+
+
 if __name__ == "__main__":
     training_file = "Project 2/data/complex_words_training.txt"
     development_file = "Project 2/data/complex_words_development.txt"
@@ -269,7 +350,5 @@ if __name__ == "__main__":
     classifiers(training_file, development_file, counts)
 
     ## YOUR CODE HERE
-    # Train your best classifier, predict labels for the test dataset and write
-    # the predicted labels to the text file 'test_labels.txt', with ONE LABEL
-    # PER LINE
+    final_model_trained(training_file, development_file, test_file, counts)
 
