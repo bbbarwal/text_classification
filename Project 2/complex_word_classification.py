@@ -115,7 +115,7 @@ def word_frequency_threshold(training_file, development_file, counts):
 
     train_words, y_train = load_file(training_file)
 
-    frequency_thresholds = [10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000]
+    frequency_thresholds = [10, 52640, 277261000, 1461742000, 7711493000, 20929107000, 28315430000, 34528974000, 41319061000, 47376829651]
 
     best_threshold = None
     best_f1 = 0
@@ -184,10 +184,10 @@ def naive_bayes(training_file, development_file, counts):
     incorrect_dev = [word for word, true, pred in zip(words_dev, dev_y, dev_pred) if true != pred]
 
     # Print sample words
-    print("\nCorrectly Predicted Training Words:", correct_train[:20])
-    print("Incorrectly Predicted Training Words:", incorrect_train[:20])
-    print("\nCorrectly Predicted Development Words:", correct_dev[:20])
-    print("Incorrectly Predicted Development Words:", incorrect_dev[:20])
+    #print("\nCorrectly Predicted Training Words:", correct_train[:20])
+    #print("Incorrectly Predicted Training Words:", incorrect_train[:20])
+    #print("\nCorrectly Predicted Development Words:", correct_dev[:20])
+    #print("Incorrectly Predicted Development Words:", incorrect_dev[:20])
 
 def feature_extraction(words, labels, counts):
     """Convert words into feature vectors: length and frequency."""

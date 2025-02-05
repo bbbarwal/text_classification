@@ -18,7 +18,7 @@ def get_accuracy(y_pred, y_true):
             correct_predictions += 1
     total_prediction = len(y_true)
     accuracy = correct_predictions / total_prediction
-    return accuracy*100
+    return accuracy
 
 def get_precision(y_pred, y_true, label=1):
     """Calculate the precision of the predicted labels.
@@ -37,7 +37,7 @@ def get_precision(y_pred, y_true, label=1):
         return 0
     precision = true_positive / predicted_positive
     #print(true_positive, predicted_positive)
-    return precision*100
+    return precision
 
 
 def get_recall(y_pred, y_true, label=1):
@@ -56,7 +56,7 @@ def get_recall(y_pred, y_true, label=1):
     if actual_positive == 0:
         return 0
     recall = true_positive / actual_positive
-    return recall*100
+    return recall
 
 
 def get_fscore(y_pred, y_true, label=1):
@@ -91,3 +91,8 @@ def evaluate(y_pred, y_true, label=1):
 y_pred = [0, 1, 0, 1, 0, 1, 1]
 y_true = [0, 1, 0, 0, 0, 1, 1]
 print(get_precision(y_pred, y_true, 1))
+
+
+y_pred = [0, 0, 1, 0, 1, 1, 1, 0, 1, 1]
+y_true = [0, 0, 1, 0, 1, 1, 1, 0, 1, 1]
+print(get_accuracy(y_pred, y_true))
